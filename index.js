@@ -1,6 +1,7 @@
 import { LitElement, html } from './lib/lit-element.min.js'
 import './node_modules/xy-ui/components/xy-input.js'
 import './node_modules/xy-ui/components/xy-table.js'
+import { setUrl, resetUrl, getRedirectUrl } from './lib/tool.js'
 
 customElements.define('app-main', class extends LitElement {
   static get properties() {
@@ -25,24 +26,6 @@ customElements.define('app-main', class extends LitElement {
     this.urls = []
     this.filter = ''
     this.editUrl = ''
-
-    chrome.webRequest && chrome.webRequest.onBeforeRequest.addListener (
-      ({ url }) => {
-        this.urls = [...this.urls, url]
-
-        const redirectUrl = this.getUrl()[this.replaceQuery(url)]
-
-        if (redirectUrl) {
-          return {
-            redirectUrl
-          }
-        }
-      },
-      {
-        urls: ['http://*/*', 'https://*/*']
-      },
-      ['blocking'] 
-    );
   }
 
   handleSearch({ detail: { value } }) {
@@ -58,36 +41,11 @@ customElements.define('app-main', class extends LitElement {
   }
 
   handleEditUrl = (e) => {
-    this.setUrl(e.target.value)
+    setUrl(this.editUrl, e.target.value)
   }
 
   handleReset = () => {
-    this.resetUrl()
-  }
-
-  getUrl = () => {
-    return JSON.parse(localStorage.getItem('$http-intercept-url')) || {}
-  }
-
-  setUrl = (url) => {
-    localStorage.setItem('$http-intercept-url', JSON.stringify({
-      ...this.getUrl(),
-      [this.editUrl]: this.replaceQuery(url)
-    }))
-  }
-
-  resetUrl = () => {
-    localStorage.removeItem('$http-intercept-url')
-  }
-
-  getRedirectUrl = () => {
-    return this.getUrl()[this.replaceQuery(this.editUrl)] || this.replaceQuery(this.editUrl)
-  }
-
-  replaceQuery = (url) => {
-    const { origin, pathname } = new URL(url)
-
-    return origin + pathname
+    resetUrl()
   }
 
   renderRequestList = () => {
@@ -116,7 +74,7 @@ customElements.define('app-main', class extends LitElement {
 
     return html`
       <p>${this.editUrl}</p>
-      <input value=${this.getRedirectUrl()} @change=${this.handleEditUrl} />
+      <input value=${getRedirectUrl(this.editUrl)} @change=${this.handleEditUrl} />
       <xy-button type="primary" @click=${this.handleBack}>返回列表</xy-button>
     `
   }
