@@ -1,7 +1,7 @@
 import { LitElement, html } from './lib/lit-element.min.js'
 import './node_modules/xy-ui/components/xy-input.js'
 import './node_modules/xy-ui/components/xy-table.js'
-import { setUrl, resetUrl, getRedirectUrl } from './lib/tool.js'
+import { replaceQuery, setUrl, resetUrl, getRedirectUrl } from './lib/tool.js'
 
 customElements.define('app-main', class extends LitElement {
   static get properties() {
@@ -41,7 +41,7 @@ customElements.define('app-main', class extends LitElement {
   }
 
   handleEditUrl = (e) => {
-    setUrl(this.editUrl, e.target.value)
+    setUrl(replaceQuery(this.editUrl), e.target.value)
   }
 
   handleReset = () => {
